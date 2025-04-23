@@ -1,4 +1,4 @@
-# BigQuery-Continuous-Queries-Fish-Tank-Health-IOT-Demo
+# BigQuery-Continuous-Queries-Fish-Tank-IOT-Demo
 This is an end-to-end demo using BigQuery continuous queries to address an unhealthy fish tank IOT sensor event with ServiceNow's Service Operations Workspace. This was demoed onstage at Google Cloud Next 2025 [recording](https://www.youtube.com/watch?v=SKv6bbwSL5I).
 
 BigQuery continuous queries are SQL statements that run continuously, allowing you analyze incoming data in BigQuery in real time. You can insert the output rows produced by a continuous query into a BigQuery table or export them to Pub/Sub, Bigtable, or Spanner.
