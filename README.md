@@ -491,7 +491,8 @@ The continuous query then writes this message to another Pub/Sub topic, which is
 
 6. Run the Notebook code cell.
 
-   ![Screenshot 2025-04-24 at 2 29 44 PM](https://github.com/user-attachments/assets/2e465726-af9a-45f7-bed6-77799b20471b)
+   ![AmVzYi8fd4CbtDb](https://github.com/user-attachments/assets/f90f14a5-e68e-4af7-8124-b15aee5d4703)
+
 
 7. The code will start and will start writing data into the Pub/Sub topic. This notebook will run until cancelled or the runtime expires (generally in a matter of hours).
 
