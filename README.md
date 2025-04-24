@@ -132,6 +132,15 @@ The continuous query then writes this message to another Pub/Sub topic, which is
     }
     ```
 
+4. Log into ServiceNow's Service Operations Workspace, go to your inbox, make sure your status is set as "avaialble" and confirm a new incident arrived.
+
+    ![4sNxqG4YTYfDJhF](https://github.com/user-attachments/assets/8330c9fa-4c80-4b1d-9c42-b5159ccf75ff)
+
+5. Accept the incident and make sure the ticket description was correctly carried over.
+
+   ![BXsc7h5gDxzMjwi](https://github.com/user-attachments/assets/f5922f2f-0294-42f6-9a1f-752afcc42385)
+
+
 ## Create a BigQuery continuous query
 
 1. XYZ
