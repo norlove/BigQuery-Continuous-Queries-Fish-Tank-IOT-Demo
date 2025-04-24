@@ -120,9 +120,9 @@ The continuous query then writes this message to another Pub/Sub topic, which is
 
 ## Configure ServiceNow (if applicable)
 
-1. INCLUDE STEPS TO CONFIGURE SERVICENOW ENDPOINT HERE
+1. **TO DO: INCLUDE STEPS TO CONFIGURE SERVICENOW ENDPOINT HERE**
 
-2. Once your ServiceNow connection is configured and you have the endpoint configured, create a new Pub/Sub subcription named "cymbal_pets_to_servicenow" under the Pub/Sub topic cymbal_pets_ServiceNow_writer. This Pub/Sub subscription will push messages from the continuous query into the ServiceNow workflow. Be sure to set up the Pub/Sub scription as a Push method with the endpoint URL you created above. Also be sure to check the "Enable payload unwrapping" and "Write metadata fields".
+2. Once your ServiceNow connection is configured and you have the endpoint configured, create a new Pub/Sub subcription named "cymbal_pets_to_servicenow" under the Pub/Sub topic cymbal_pets_ServiceNow_writer. This Pub/Sub subscription will push messages from the continuous query into the ServiceNow workflow. Be sure to set up the Pub/Sub scription as a Push method with the endpoint URL you created above (For Googler's please reference the instructions [HERE](https://docs.google.com/document/d/1Z6ZUwhSOPSsmPLsvEUZZCG9ZBux-U3kfKQRxTNsmBYE/edit?usp=sharing&resourcekey=0-t1GPrH6S_UGPqkw2DZu5iA)). Also be sure to check the "Enable payload unwrapping" and "Write metadata fields".
 
     ![B9JUuv7YZ2ATCVL](https://github.com/user-attachments/assets/a607e475-eb5a-45ef-a2b2-0817d401022e)
 
