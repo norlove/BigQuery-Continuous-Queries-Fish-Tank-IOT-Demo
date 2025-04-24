@@ -64,9 +64,11 @@ The continuous query then writes this message to another Pub/Sub topic, which is
       OPTIONS (ENDPOINT = 'gemini-2.0-flash');
       ```
 
-9. Create a BigQuery Service Account named "bq-continuous-query-sa", granting yourself permissions to submit a job that runs using the service account [[ref](https://cloud.google.com/bigquery/docs/continuous-queries#user_account_permissions)], and granting permissions to the service account itself to access BigQuery resources [[ref](https://cloud.google.com/bigquery/docs/continuous-queries#service_account_permissions)].
+9. Create a BigQuery Service Account named "bq-continuous-query-sa", granting yourself permissions to submit a job that runs using the service account [[ref](https://cloud.google.com/bigquery/docs/continuous-queries#user_account_permissions)], and granting permissions to the service account itself to access BigQuery resources [[ref](https://cloud.google.com/bigquery/docs/continuous-queries#service_account_permissions)] and writing to Pub/Sub.
+    The to easily permission this, grant the following IAM roles to this service account:
+    BigQuery Data Editor, BigQuery Data Viewer, Pub/Sub Publisher, Pub/Sub Viewer
 
-**NOTE: if you have issues with this demo, it is 9 times out of 10 related to an IAM permissions issue.**
+    **NOTE: if you have issues with this demo, it is 9 times out of 10 related to an IAM permissions issue.**
 
 ## Setup the Pub/Sub topics and subscriptions
 
