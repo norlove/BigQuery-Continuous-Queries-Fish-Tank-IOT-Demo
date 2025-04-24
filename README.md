@@ -20,37 +20,37 @@ The continuous query then writes this message to another Pub/Sub topic, which is
 2. Ensure your user account has the appropriate IAM permissions [[ref](https://cloud.google.com/bigquery/docs/continuous-queries#choose_an_account_type)]. During this demo, we'll run the continuous query with a Service Account as we'll be writing to a Pub/Sub topic.
 
 3. Create a dataset and table in your project by running the following SQL query in your BigQuery environment:
-```
-#Creates a dataset named Cymbal_Pets within your currently selected project
-CREATE SCHEMA IF NOT EXISTS Cymbal_Pets
-OPTIONS (
-  location = "US"
-);
-
-#Creates a table named Fish_Tank_IOT_Data_Ingest.
-CREATE OR REPLACE TABLE
-  `Cymbal_Pets.Fish_Tank_IOT_Data_Ingest` ( 
-    event_timestamp TIMESTAMP,
-    store_id STRING,
-    location STRUCT<
-      city STRING,
-      state STRING,
-      zip_code STRING>,
-    tank_id STRING,
-    temperature FLOAT64,
-    ph_level FLOAT64,
-    ammonia_ppm FLOAT64,
-    nitrite_no2_ppm FLOAT64,
-    nitrate_no3_ppm FLOAT64,
-    salinity_ppm FLOAT64,
-    event_metadata JSON )
-CLUSTER BY
-  event_timestamp;
-```
+    ```
+    #Creates a dataset named Cymbal_Pets within your currently selected project
+    CREATE SCHEMA IF NOT EXISTS Cymbal_Pets
+    OPTIONS (
+      location = "US"
+    );
+    
+    #Creates a table named Fish_Tank_IOT_Data_Ingest.
+    CREATE OR REPLACE TABLE
+      `Cymbal_Pets.Fish_Tank_IOT_Data_Ingest` ( 
+        event_timestamp TIMESTAMP,
+        store_id STRING,
+        location STRUCT<
+          city STRING,
+          state STRING,
+          zip_code STRING>,
+        tank_id STRING,
+        temperature FLOAT64,
+        ph_level FLOAT64,
+        ammonia_ppm FLOAT64,
+        nitrite_no2_ppm FLOAT64,
+        nitrate_no3_ppm FLOAT64,
+        salinity_ppm FLOAT64,
+        event_metadata JSON )
+    CLUSTER BY
+      event_timestamp;
+    ```
 
 4. Create a BigQuery remote connection named "continuous-queries-connection" in the Cloud Console using [these steps](https://cloud.google.com/bigquery/docs/bigquery-ml-remote-model-tutorial#Create-Connection).
 
-<img width="544" alt="Screenshot 2024-07-28 at 3 46 08 PM" src="https://github.com/user-attachments/assets/05afada9-a7aa-4cbf-80d6-c075f0a23d4d">
+    <img width="544" alt="Screenshot 2024-07-28 at 3 46 08 PM" src="https://github.com/user-attachments/assets/05afada9-a7aa-4cbf-80d6-c075f0a23d4d">
 
 5. After the connection has been created, click "Go to connection", and in the Connection Info pane, copy the service account ID for use in the next step.
 
@@ -71,18 +71,49 @@ CLUSTER BY
 
 1. Create a Pub/Sub topic [[ref](https://cloud.google.com/pubsub/docs/create-topic)] named "cymbal_pets_BQ_writer", which will write data into BigQuery. No need to create a default subscription.
 
-   ![Screenshot 2025-04-24 at 10 53 10 AM](https://github.com/user-attachments/assets/e05b711a-f5c0-4c72-8b3d-b820171b9fcd)
+     ![Screenshot 2025-04-24 at 10 53 10 AM](https://github.com/user-attachments/assets/e05b711a-f5c0-4c72-8b3d-b820171b9fcd)
 
 3. Create another Pub/Sub topic named "cymbal_pets_ServiceNow_writer", which will write data from BigQuery into ServiceNow. Again, no need to create a default subscription.
    
-4. Grant the service account you created in step #8 permissions to the Pub/Sub topic with the Pub/Sub Viewer and Pub/Sub Publisher roles [[ref](https://cloud.google.com/bigquery/docs/export-to-pubsub#service_account_permissions_2)].
+4. Grant the service account you created in step #8 above permissions to the Pub/Sub topic with the Pub/Sub Viewer and Pub/Sub Publisher roles [[ref](https://cloud.google.com/bigquery/docs/export-to-pubsub#service_account_permissions_2)].
 
-6. Create a Pub/Sub subscription named "cymbal_pets_to_BigQuery_table" under the Pub/Sub topic cymbal_pets_BQ_writer which will be a BigQuery to Pub/Sub subscription and will dump data into the BQ table created above. Be sure to use the BQ table schema.
+6. Create a Pub/Sub subscription named "cymbal_pets_to_BigQuery_table" under the Pub/Sub topic cymbal_pets_BQ_writer which will be a BigQuery to Pub/Sub subscription and will dump data into the BQ table previously created. Be sure to use the BQ table schema.
 
+    ![Screenshot 2025-04-24 at 1 24 31 PM](https://github.com/user-attachments/assets/649ed089-7b18-4cf4-8453-4d1e998ff84f)
 
 7. Grant your project's internal Google-provided Pub/Sub service account BigQuery Data Editor and BigQuery Metadtaa Viewer permissions [[ref](https://cloud.google.com/pubsub/docs/create-bigquery-subscription#assign_bigquery_service_account)]. This is to allow the Pub/Sub subscription cymbal_pets_to_BigQuery_table to write data into your BigQuery table. To do this, you'll grant the service account service-{PROJECT_NUMBER}@gcp-sa-pubsub.iam.gserviceaccount.com (replacing PROJECT_NUMBER with your project's actual project number) with BigQuery Data Editor and BigQuery Metadata Viewer role permissions.
 
-![Screenshot 2025-04-24 at 1 17 45 PM](https://github.com/user-attachments/assets/e5d834b4-1fc5-499b-8eda-f5292bb481ec)
+    ![Screenshot 2025-04-24 at 1 17 45 PM](https://github.com/user-attachments/assets/e5d834b4-1fc5-499b-8eda-f5292bb481ec)
+
+8. Test the Pub/Sub to BigQuery subscription by clicking on the cymbal_pets_BQ_writer Pub/Sub topic, go to the Messages tab, and click publish message. Provide this input in the message body:
+
+    ```
+    {
+    "event_timestamp": "2025-03-18T22:24:57.206020Z",
+    "store_id": "store-789",
+    "location": {
+      "city": "Springfield",
+      "state": "IL",
+      "zip_code": "62704"
+    },
+    "tank_id": "fish-101",
+    "temperature": 56.2,
+    "ph_level": 7.8,
+    "ammonia_ppm": 0.25,
+    "nitrite_no2_ppm": 0.1,
+    "nitrate_no3_ppm": 30.0,
+    "salinity_ppm": 35.0,
+    "event_metadata": {}
+    }
+    ```
+    
+9. Go to your BigQuery table and query it to make sure the one record was successfully inserted.
+
+
+10. Now delete that record to make sure the table is clean:
+    ```DELETE `Cymbal_Pets.Fish_Tank_IOT_Data_Ingest` WHERE TRUE```
+
+11. 
 
 ## Configure ServiceNow (if applicable)
 
