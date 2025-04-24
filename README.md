@@ -164,7 +164,7 @@ The continuous query then writes this message to another Pub/Sub topic, which is
       ![Screenshot 2025-04-24 at 1 54 23 PM](https://github.com/user-attachments/assets/dbf89e4d-82b9-4292-906f-3651c6de6278)
 
 
-7. Go back to the BigQuery SQL editor and paste the following SQL query:
+7. Go back to the BigQuery SQL editor and paste the below SQL query. Save your query.
 
    **Note: The URI provided in the example below specifies a Pub/Sub Topic as the destination for the continuous query, with the GCP project listed as "my_project". Be sure to change these to your own project. You can also specify different destinations for a BigQuery continuous query, as described in [these examples](https://cloud.google.com/bigquery/docs/continuous-queries#examples).**
 
@@ -252,6 +252,7 @@ The continuous query then writes this message to another Pub/Sub topic, which is
 
 
 3. Click to add a new Code block. Paste in the following Python code. Be sure to change the project ID below from "my_project" to your own project.
+   Save your notebook.
 
     ```
     # @title Generate healthy synthetic fish tank data and stream to Pub/Sub
@@ -484,7 +485,20 @@ The continuous query then writes this message to another Pub/Sub topic, which is
     
     ```
 
-4. 
+5. Click to connect the runtime. Give it a minute to activate and connect, represented by a green check mark.
+
+    ![Screenshot 2025-04-24 at 2 28 57 PM](https://github.com/user-attachments/assets/f81bfcd3-a880-4029-86b3-8e0d21b05854)
+
+6. Run the Notebook code cell.
+
+   ![Screenshot 2025-04-24 at 2 29 44 PM](https://github.com/user-attachments/assets/2e465726-af9a-45f7-bed6-77799b20471b)
+
+7. The code will start and will start writing data into the Pub/Sub topic. This notebook will run until cancelled or the runtime expires (generally in a matter of hours).
+
+8. Query your Fish_Tank_IOT_Data_Ingest BigQuery table again and observe that it is now receiving streaming data.
+
+   ![Screenshot 2025-04-24 at 2 32 42 PM](https://github.com/user-attachments/assets/f06b768d-9487-46bd-bde3-af8699e45148)
+
 
 ## Insert an "unhealthy" fish tank IOT sensor event and confirm its receipt in ServiceNow
 
