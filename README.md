@@ -13,7 +13,7 @@ The continuous query then writes this message to another Pub/Sub topic, which is
 
 <img width="970" alt="Screenshot 2025-04-22 at 9 57 56 PM" src="https://github.com/user-attachments/assets/f49f6c7e-94b5-42e2-abc1-5828c0c7a7f5" />
 
-## Setting up our project
+## Setting up your project
 
 1. Ensure your project has enabled the [Vertex AI API](https://console.cloud.google.com/apis/library/aiplatform.googleapis.com) and [Pub/Sub API](https://console.cloud.google.com/apis/library/pubsub.googleapis.com)
 
@@ -48,7 +48,7 @@ CLUSTER BY
   event_timestamp;
 ```
 
-4. Create a BigQuery remote connection named "continuous-queries-connection" in the Cloud Console using [these steps](https://cloud.google.com/bigquery/docs/bigquery-ml-remote-model-tutorial#create_a_cloud_resource_connection).
+4. Create a BigQuery remote connection named "continuous-queries-connection" in the Cloud Console using [these steps](https://cloud.google.com/bigquery/docs/bigquery-ml-remote-model-tutorial#Create-Connection).
 
 <img width="544" alt="Screenshot 2024-07-28 at 3 46 08 PM" src="https://github.com/user-attachments/assets/05afada9-a7aa-4cbf-80d6-c075f0a23d4d">
 
@@ -69,7 +69,13 @@ CLUSTER BY
 
 ## Setup the Pub/Sub topics and subscriptions
 
-1. XYZ
+1. Create a Pub/Sub topic [[ref](https://cloud.google.com/pubsub/docs/create-topic)] named "cymbal_pets_BQ_writer", which will write data into BigQuery. No need to create a default subscription.
+
+   ![Screenshot 2025-04-24 at 10 53 10 AM](https://github.com/user-attachments/assets/e05b711a-f5c0-4c72-8b3d-b820171b9fcd)
+
+3. Create another Pub/Sub topic named "cymbal_pets_ServiceNow_writer", which will write data from BigQuery into ServiceNow. Again, no need to create a default subscription.
+   
+4. Grant the service account you created in step #7 permissions to the Pub/Sub topic with the Pub/Sub Viewer and Pub/Sub Publisher roles [[ref](https://cloud.google.com/bigquery/docs/export-to-pubsub#service_account_permissions_2)].
 
 ## Configure ServiceNow (if applicable)
 
