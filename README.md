@@ -63,7 +63,7 @@ CLUSTER BY
       REMOTE WITH CONNECTION `us.continuous-queries-connection`
       OPTIONS (ENDPOINT = 'gemini-2.0-flash');
       ```
-8. Create a BigQuery Service Account named "bq-continuous-query-sa", granting yourself permissions to subit a job that runs using the service account [[ref](https://cloud.google.com/bigquery/docs/continuous-queries#user_account_permissions)], and granting permissions to the service account itself to access BigQuery resources [[ref](https://cloud.google.com/bigquery/docs/continuous-queries#service_account_permissions)].
+8. Create a BigQuery Service Account named "bq-continuous-query-sa", granting yourself permissions to submit a job that runs using the service account [[ref](https://cloud.google.com/bigquery/docs/continuous-queries#user_account_permissions)], and granting permissions to the service account itself to access BigQuery resources [[ref](https://cloud.google.com/bigquery/docs/continuous-queries#service_account_permissions)].
 
 **NOTE: if you have issues with this demo, it is 9 times out of 10 related to an IAM permissions issue.**
 
@@ -75,7 +75,14 @@ CLUSTER BY
 
 3. Create another Pub/Sub topic named "cymbal_pets_ServiceNow_writer", which will write data from BigQuery into ServiceNow. Again, no need to create a default subscription.
    
-4. Grant the service account you created in step #7 permissions to the Pub/Sub topic with the Pub/Sub Viewer and Pub/Sub Publisher roles [[ref](https://cloud.google.com/bigquery/docs/export-to-pubsub#service_account_permissions_2)].
+4. Grant the service account you created in step #8 permissions to the Pub/Sub topic with the Pub/Sub Viewer and Pub/Sub Publisher roles [[ref](https://cloud.google.com/bigquery/docs/export-to-pubsub#service_account_permissions_2)].
+
+6. Create a Pub/Sub subscription named "cymbal_pets_to_BigQuery_table" under the Pub/Sub topic cymbal_pets_BQ_writer which will be a BigQuery to Pub/Sub subscription and will dump data into the BQ table created above. Be sure to use the BQ table schema.
+
+
+7. Grant your project's internal Google-provided Pub/Sub service account BigQuery Data Editor and BigQuery Metadtaa Viewer permissions [[ref](https://cloud.google.com/pubsub/docs/create-bigquery-subscription#assign_bigquery_service_account)]. This is to allow the Pub/Sub subscription cymbal_pets_to_BigQuery_table to write data into your BigQuery table. To do this, you'll grant the service account service-{PROJECT_NUMBER}@gcp-sa-pubsub.iam.gserviceaccount.com (replacing PROJECT_NUMBER with your project's actual project number) with BigQuery Data Editor and BigQuery Metadata Viewer role permissions.
+
+![Screenshot 2025-04-24 at 1 17 45 PM](https://github.com/user-attachments/assets/e5d834b4-1fc5-499b-8eda-f5292bb481ec)
 
 ## Configure ServiceNow (if applicable)
 
