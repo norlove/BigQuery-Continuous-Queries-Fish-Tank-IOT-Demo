@@ -108,16 +108,29 @@ The continuous query then writes this message to another Pub/Sub topic, which is
     ```
     
 9. Go to your BigQuery table and query it to make sure the one record was successfully inserted.
+        ![Screenshot 2025-04-24 at 1 31 06 PM](https://github.com/user-attachments/assets/fbdc475e-7fa8-4906-ac44-5858d2f7b5e5)
 
 
 10. Now delete that record to make sure the table is clean:
     ```DELETE `Cymbal_Pets.Fish_Tank_IOT_Data_Ingest` WHERE TRUE```
 
-11. 
-
 ## Configure ServiceNow (if applicable)
 
-1. XYZ
+1. INCLUDE STEPS TO CONFIGURE SERVICENOW ENDPOINT HERE
+
+2. Once your ServiceNow connection is configured and you have the endpoint configured, create a new Pub/Sub subcription named "cymbal_pets_to_servicenow" under the Pub/Sub topic cymbal_pets_ServiceNow_writer. This Pub/Sub subscription will push messages from the continuous query into the ServiceNow workflow. Be sure to set up the Pub/Sub scription as a Push method with the endpoint URL you created above. Also be sure to check the "Enable payload unwrapping" and "Write metadata fields".
+
+    ![B9JUuv7YZ2ATCVL](https://github.com/user-attachments/assets/a607e475-eb5a-45ef-a2b2-0817d401022e)
+
+
+3. Test the Pub/Sub to ServiceNow subscription by clicking on the cymbal_pets_ServiceNow_writer Pub/Sub topic, go to the Messages tab, and click publish message. Provide this input in the message body:
+
+    ```
+    {
+    "event_timestamp": "2025-03-18T22:24:57.206020Z",
+    "ticket_description": "Just a test message to ServiceNow"
+    }
+    ```
 
 ## Create a BigQuery continuous query
 
