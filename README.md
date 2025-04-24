@@ -15,7 +15,7 @@ The continuous query then writes this message to another Pub/Sub topic, which is
 
 ## Setting up your project
 
-1. Ensure your project has enabled the [Vertex AI API](https://console.cloud.google.com/apis/library/aiplatform.googleapis.com) and [Pub/Sub API](https://console.cloud.google.com/apis/library/pubsub.googleapis.com)
+1. Ensure your project has enabled the [Compute Engine API](https://console.cloud.google.com/apis/library/compute.googleapis.com), [Vertex AI API](https://console.cloud.google.com/apis/library/aiplatform.googleapis.com) and [Pub/Sub API](https://console.cloud.google.com/apis/library/pubsub.googleapis.com)
 
 2. Ensure your user account has the appropriate IAM permissions [[ref](https://cloud.google.com/bigquery/docs/continuous-queries#choose_an_account_type)]. During this demo, we'll run the continuous query with a Service Account as we'll be writing to a Pub/Sub topic.
 
@@ -238,15 +238,255 @@ The continuous query then writes this message to another Pub/Sub topic, which is
 
 11. Your continuous query should now be valid.
 
-      
+      ![Screenshot 2025-04-24 at 2 08 31 PM](https://github.com/user-attachments/assets/bebd7915-694d-4ba3-99b0-1d2fb25827e2)
 
 12. Click Run to start your continuous query. After about a minute or so, the continuous query will be fully running, ready to receive and process incoming data into your abandoned_carts table.
 
 ## Generate synthetic IoT sensor data 
 
-1. XYZ
+1. To demonstrate this environment at scale, let's generate some "healthy" fish tank IOT sensor data. We're going to do this using a Colab Enterprise notebook in BigQuery [[ref](https://cloud.google.com/bigquery/docs/notebooks-introduction)].
 
-## Test everything end-to-end
+2. Go into BigQuery, click Create new Notebook. If required click the button to enable the API (there may be other APIs the wizard will have you enable).
+
+    ![Screenshot 2025-04-24 at 2 14 32 PM](https://github.com/user-attachments/assets/8916fe51-7621-4e9f-830f-c5bfa47be719)
+
+
+3. Click to add a new Code block. Paste in the following Python code. Be sure to change the project ID below from "my_project" to your own project.
+
+    ```
+    # @title Generate healthy synthetic fish tank data and stream to Pub/Sub
+    
+    import time
+    import datetime
+    import random
+    import json
+    import logging
+    import os
+    from google.cloud import pubsub_v1
+    from concurrent.futures import Future
+    import google.auth
+    
+    # Project ID and Pub/Sub topic configuration
+    PROJECT_ID = "my_project"
+    TOPIC_ID = "cymbal_pets_BQ_writer"
+    
+    
+    # Target Pub/Sub publishing rate and reporting interval
+    MESSAGES_PER_SECOND_TARGET = 1000
+    REPORTING_INTERVAL_SECONDS = 10
+    
+    # Configure logging for standard output
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+    
+    # Generate synthetic data Cymbal Pet stores across a variety of cities
+    US_LOCATIONS = [
+        {"city": "Los Angeles", "state": "CA", "zip_code": "90012"},
+        {"city": "San Francisco", "state": "CA", "zip_code": "94103"},
+        {"city": "Las Vegas", "state": "NV", "zip_code": "88901"},
+        {"city": "Seattle", "state": "WA", "zip_code": "98104"},
+        {"city": "Portland", "state": "OR", "zip_code": "97204"},
+        {"city": "Denver", "state": "CO", "zip_code": "80202"},
+        {"city": "Phoenix", "state": "AZ", "zip_code": "85003"},
+        {"city": "Salt Lake City", "state": "UT", "zip_code": "84111"},
+        {"city": "Chicago", "state": "IL", "zip_code": "60602"},
+        {"city": "Detroit", "state": "MI", "zip_code": "48226"},
+        {"city": "Minneapolis", "state": "MN", "zip_code": "55415"},
+        {"city": "Kansas City", "state": "MO", "zip_code": "64106"},
+        {"city": "Atlanta", "state": "GA", "zip_code": "30303"},
+        {"city": "Dallas", "state": "TX", "zip_code": "75201"},
+        {"city": "Houston", "state": "TX", "zip_code": "77002"},
+        {"city": "Miami", "state": "FL", "zip_code": "33132"},
+        {"city": "Nashville", "state": "TN", "zip_code": "37219"},
+        {"city": "New York", "state": "NY", "zip_code": "10007"},
+        {"city": "Boston", "state": "MA", "zip_code": "02108"},
+        {"city": "Philadelphia", "state": "PA", "zip_code": "19107"},
+    ]
+    
+    # --- Healthy Ranges for Saltwater Aquarium ---
+    HEALTHY_RANGES = {
+        "ph_level": (8.1, 8.4),
+        "ammonia_ppm": (0.0, 0.02),
+        "nitrite_no2_ppm": (0.0, 0.05),
+        "nitrate_no3_ppm": (2.0, 8.0),
+        "temperature": (75.0, 79.0),
+        "salinity_ppm": (32.0, 35.0)
+    }
+    
+    # Global counters for stats
+    messages_published_count = 0
+    messages_failed_count = 0
+    
+    # --- Data Generation Function ---
+    def generate_fish_tank_event() -> dict:
+        """
+        Generates a single synthetic HEALTHY fish tank sensor event for a store.
+        Metadata is converted to a JSON string.
+        """
+        # Get current UTC time
+        now_utc = datetime.datetime.now(datetime.timezone.utc)
+        event_timestamp = now_utc.strftime('%Y-%m-%d %H:%M:%S.%f') + " UTC"
+    
+    
+        # Generate a random store and fish tank ID
+        store_id = f"store-{random.randrange(1, 101):03}"
+        # Up to 15 fish tanks per store
+        tank_id = f"tank-{random.randrange(1, 15):02}"
+    
+        # Generate healthy fish tank sensor readings (Using original keys)
+        ph = random.uniform(*HEALTHY_RANGES["ph_level"])
+        ammonia = random.uniform(*HEALTHY_RANGES["ammonia_ppm"])
+        nitrite = random.uniform(*HEALTHY_RANGES["nitrite_no2_ppm"])
+        nitrate = random.uniform(*HEALTHY_RANGES["nitrate_no3_ppm"])
+        temperature = random.uniform(*HEALTHY_RANGES["temperature"])
+        salinity = random.uniform(*HEALTHY_RANGES["salinity_ppm"])
+    
+        # Random location from the list
+        location_data = random.choice(US_LOCATIONS)
+    
+        # Create metadata specific to fish tank
+        metadata_dict = {
+            "water_type": "saltwater",
+            "sensor_set_id": f"tank-sensors-{store_id}-{tank_id}",
+            "IOT_Sensor_status": "online"
+        }
+    
+        # Convert the metadata dictionary into a JSON formatted string (kept pattern)
+        event_metadata_string = json.dumps(metadata_dict)
+    
+        # Build the final event dictionary with fish tank fields
+        event = {
+            # --- Assign the RANDOMLY selected timestamp value ---
+            "event_timestamp": event_timestamp,
+            "store_id": store_id,
+            "tank_id": tank_id,
+            "ph_level": round(ph, 2),
+            "ammonia_ppm": round(ammonia, 3),
+            "nitrite_no2_ppm": round(nitrite, 3),
+            "nitrate_no3_ppm": round(nitrate, 1),
+            "temperature": round(temperature, 1),
+            "salinity_ppm": round(salinity, 1),
+            "location": {
+                "city": location_data["city"],
+                "state": location_data["state"],
+                "zip_code": location_data["zip_code"]
+            },
+            "event_metadata": event_metadata_string
+        }
+        return event
+    
+    def publish_callback(future: Future):
+        """Callback function to handle asynchronous publish results."""
+        global messages_published_count, messages_failed_count
+        try:
+            message_id = future.result(timeout=60)
+            messages_published_count += 1
+        except TimeoutError:
+            messages_failed_count += 1
+            logging.warning("Publish timed out.")
+        except Exception as e:
+            messages_failed_count += 1
+            logging.error(f"Failed to publish message: {e}", exc_info=False)
+    
+    # --- Publishing Function ---
+    def publish_synthetic_data(project_id: str, topic_id: str, rate: int):
+        """Generates and publishes synthetic fish tank data to Pub/Sub at a target rate."""
+        global messages_published_count, messages_failed_count
+    
+        # Configure batch settings
+        batch_settings = pubsub_v1.types.BatchSettings(
+            max_messages=1000,
+            max_bytes=1024 * 1024 * 5,
+            max_latency=0.1,
+        )
+    
+        try:
+            # Create the Publisher client
+            publisher = pubsub_v1.PublisherClient(batch_settings=batch_settings)
+            topic_path = publisher.topic_path(project_id, topic_id)
+    
+            # --- Logging ---
+            logging.info(f"--- Starting Fish Tank Data Publisher ---")
+            logging.info(f"Publishing to Pub/Sub topic: {topic_path}")
+            logging.info(f"Target publish rate: {rate} messages/second")
+            logging.info(f"Generating HEALTHY fish tank data ranges.")
+            logging.info(f"Event metadata sent as JSON string.")
+            logging.info(">>> IMPORTANT: To stop, use Colab 'Interrupt execution' button <<<")
+    
+        except Exception as e:
+            logging.error(f"FATAL: Failed to initialize PublisherClient or topic path: {e}", exc_info=True)
+            return
+    
+        last_report_time = time.time()
+        start_time_global = time.time()
+    
+        try:
+            # Main publishing loop
+            while True:
+                batch_start_time = time.time()
+                futures = []
+    
+                for _ in range(rate):
+                    # --- Use the modified data generation function ---
+                    event_data = generate_fish_tank_event()
+                    data_bytes = json.dumps(event_data).encode("utf-8")
+                    future = publisher.publish(topic_path, data=data_bytes)
+                    future.add_done_callback(publish_callback)
+                    futures.append(future)
+    
+                # Rate limiting logic
+                batch_end_time = time.time()
+                elapsed_time = batch_end_time - batch_start_time
+                sleep_time = 1.0 - elapsed_time
+                if sleep_time > 0:
+                    time.sleep(sleep_time)
+    
+                # Reporting logic
+                current_time = time.time()
+                if current_time - last_report_time >= REPORTING_INTERVAL_SECONDS:
+                    elapsed_total = current_time - start_time_global
+                    current_total_published = messages_published_count
+                    current_total_failed = messages_failed_count
+                    avg_rate = current_total_published / elapsed_total if elapsed_total > 0 else 0
+    
+                    logging.info(
+                        f"Published: {current_total_published}, Failed: {current_total_failed}, "
+                        f"Avg Rate: {avg_rate:.2f} msg/sec"
+                    )
+                    last_report_time = current_time
+    
+        except KeyboardInterrupt:
+            logging.info("Shutdown signal received. Stopping publisher...")
+        except Exception as e:
+            logging.error(f"An unexpected error occurred in the main loop: {e}", exc_info=True)
+        finally:
+            # Final stats logic
+            elapsed_total = time.time() - start_time_global
+            avg_rate = messages_published_count / elapsed_total if elapsed_total > 0 else 0
+            logging.info("--------------------")
+            logging.info("Final Run Statistics:")
+            logging.info(f"Total Time Elapsed: {elapsed_total:.2f} seconds")
+            logging.info(f"Total Messages Successfully Published: {messages_published_count}")
+            logging.info(f"Total Messages Failed to Publish: {messages_failed_count}")
+            logging.info(f"Overall Average Publish Rate: {avg_rate:.2f} msg/sec")
+            logging.info("Publisher finished.")
+    
+    
+    # --- Main Execution Block ---
+    if __name__ == "__main__":
+        # Keeping original checks, adjust TOPIC_ID placeholder if needed for your logic
+        if TOPIC_ID == "your-fish-tank-topic-id" or not TOPIC_ID:
+            logging.error("FATAL: Please update the TOPIC_ID variable for the fish tank data before running.")
+        elif not PROJECT_ID or PROJECT_ID == "your-gcp-project-id":
+             logging.error("FATAL: PROJECT_ID is not set correctly. Check auto-detection or set manually.")
+        else:
+            # Start the data publishing process
+            publish_synthetic_data(PROJECT_ID, TOPIC_ID, MESSAGES_PER_SECOND_TARGET)
+    
+    ```
+
+4. 
+
+## Insert an "unhealthy" fish tank IOT sensor event and confirm its receipt in ServiceNow
 
 1. XYZ
 
