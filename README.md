@@ -66,7 +66,8 @@ The continuous query then writes this message to another Pub/Sub topic, which is
 
 9. Create a BigQuery Service Account named "bq-continuous-query-sa", granting yourself permissions to submit a job that runs using the service account [[ref](https://cloud.google.com/bigquery/docs/continuous-queries#user_account_permissions)], and granting permissions to the service account itself to access BigQuery resources [[ref](https://cloud.google.com/bigquery/docs/continuous-queries#service_account_permissions)] and writing to Pub/Sub.
     The to easily permission this, grant the following IAM roles to this service account:
-    BigQuery Data Editor, BigQuery Data Viewer, Pub/Sub Publisher, Pub/Sub Viewer
+   
+    BigQuery Data Editor, BigQuery Data Viewer, BigQuery Connection User, Pub/Sub Publisher, and Pub/Sub Viewer
 
     **NOTE: if you have issues with this demo, it is 9 times out of 10 related to an IAM permissions issue.**
 
@@ -165,11 +166,81 @@ The continuous query then writes this message to another Pub/Sub topic, which is
 
 7. Go back to the BigQuery SQL editor and paste the following SQL query:
 
-   **Note: The URI provided in the example below specifies a Pub/Sub Topic as the destination for the continuous query, with the GCP project listed as "my_project" and the Pub/Sub Topic listed as "my_topic". Be sure to change these to your own project/topic. You can also specify different destinations for a BigQuery continuous query, as described in [these examples](https://cloud.google.com/bigquery/docs/continuous-queries#examples).**
+   **Note: The URI provided in the example below specifies a Pub/Sub Topic as the destination for the continuous query, with the GCP project listed as "my_project". Be sure to change these to your own project. You can also specify different destinations for a BigQuery continuous query, as described in [these examples](https://cloud.google.com/bigquery/docs/continuous-queries#examples).**
 
    ```
-
+    EXPORT DATA
+    OPTIONS (format = CLOUD_PUBSUB,
+    uri = "https://pubsub.googleapis.com/projects/my_project/topics/cymbal_pets_ServiceNow_writer")
+    AS (SELECT
+     TO_JSON_STRING(
+       STRUCT(
+         event_timestamp,
+         store_id,
+         location,
+         tank_id,
+         temperature,
+         ph_level,
+         ammonia_ppm,
+         nitrite_no2_ppm,
+         nitrate_no3_ppm,
+         salinity_ppm,
+         ml_generate_text_llm_result as ticket_description))
+    FROM ML.GENERATE_TEXT( MODEL `Cymbal_Pets.gemini_2_0_flash`,
+       (SELECT
+         event_timestamp,
+         store_id,
+         location,
+         tank_id,
+         temperature,
+         ph_level,
+         ammonia_ppm,
+         nitrite_no2_ppm,
+         nitrate_no3_ppm,
+         salinity_ppm,
+         CONCAT("Analyze the following salt water fish tank IOT sensor readings and create a support ticket problem description. ",
+         "Readings -- ",
+             "pH: ", ph_level, ", ",
+             "Ammonia (NH3): ", ammonia_ppm, " ppm, ",
+             "Nitrite (NO2): ", nitrite_no2_ppm, " ppm, ",
+             "Nitrate (NO3): ", nitrate_no3_ppm, " ppm, ",
+             "Temperature: ", temperature, " °F, ",
+             "Salinity: ", salinity_ppm, " ppm. ",
+         "Based on these values, what are the most likely causes for these readings, and what are the immediate recommended actions to ensure the safety and health of the aquarium inhabitants? Be specific about steps like water changes, additive usage, or equipment checks. Please keep the output to 250 words or less.") AS prompt
+        FROM
+            APPENDS(TABLE `Cymbal_Pets.Fish_Tank_IOT_Data_Ingest`,
+              CURRENT_TIMESTAMP() - INTERVAL 10 MINUTE)
+         WHERE(
+           #Check for ranges outside of normal
+           ph_level NOT BETWEEN 8.0 and 8.5
+           OR ammonia_ppm > 0.05
+           OR nitrite_no2_ppm > 0.1
+           OR nitrate_no3_ppm > 50
+           OR temperature NOT BETWEEN 74.0 AND 80.0
+           OR salinity_ppm NOT BETWEEN 31.0 AND 36.0
+         )),
+       STRUCT( 1024 AS max_output_tokens,
+       0.2 AS temperature,
+       1 AS candidate_count,
+       TRUE AS flatten_json_output)))
    ```
+   
+8.  Before you can run your query, you must enable BigQuery continuous query mode. In the BigQuery editor, click More -> Continuous Query mode
+
+      ![Screenshot 2025-04-24 at 2 04 31 PM](https://github.com/user-attachments/assets/efbc8d44-aea6-4ac8-b64b-4008c6e195f7)
+
+
+9. When the window opens, click the button CONFIRM to enable continuous queries for this BigQuery editor tab.
+
+10. Since we are writing the results of this continuous query to a Pub/Sub topic, you must run this query using a Service Account [[ref](https://cloud.google.com/bigquery/docs/continuous-queries#choose_an_account_type)]. We'll use the service account we created earlier. Click More -> Query Settings and scroll down to the Continuous query section and select your service account "bq-continuous-query-sa" and click Save.
+
+      <img width="551" alt="Screenshot 2024-07-29 at 12 03 55 AM" src="https://github.com/user-attachments/assets/28aff716-a3b9-4c85-a829-33efed32cd03">
+
+11. Your continuous query should now be valid.
+
+      
+
+12. Click Run to start your continuous query. After about a minute or so, the continuous query will be fully running, ready to receive and process incoming data into your abandoned_carts table.
 
 ## Generate synthetic IoT sensor data 
 
