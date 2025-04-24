@@ -63,7 +63,8 @@ The continuous query then writes this message to another Pub/Sub topic, which is
       REMOTE WITH CONNECTION `us.continuous-queries-connection`
       OPTIONS (ENDPOINT = 'gemini-2.0-flash');
       ```
-8. Create a BigQuery Service Account named "bq-continuous-query-sa", granting yourself permissions to submit a job that runs using the service account [[ref](https://cloud.google.com/bigquery/docs/continuous-queries#user_account_permissions)], and granting permissions to the service account itself to access BigQuery resources [[ref](https://cloud.google.com/bigquery/docs/continuous-queries#service_account_permissions)].
+
+9. Create a BigQuery Service Account named "bq-continuous-query-sa", granting yourself permissions to submit a job that runs using the service account [[ref](https://cloud.google.com/bigquery/docs/continuous-queries#user_account_permissions)], and granting permissions to the service account itself to access BigQuery resources [[ref](https://cloud.google.com/bigquery/docs/continuous-queries#service_account_permissions)].
 
 **NOTE: if you have issues with this demo, it is 9 times out of 10 related to an IAM permissions issue.**
 
@@ -143,7 +144,30 @@ The continuous query then writes this message to another Pub/Sub topic, which is
 
 ## Create a BigQuery continuous query
 
-1. XYZ
+1. BigQuery continuous queries require a BigQuery Enterprise or Enterprise Plus reservation [[ref](https://cloud.google.com/bigquery/docs/continuous-queries-introduction#reservation_limitations)]. Create one now named "bq-continuous-queries-reservation" in the US multi-region, with a max reservation size of 50 slots, and a slot baseline of 0 slots (to leverage slot autoscaling).
+   
+      ![Screenshot 2025-04-24 at 1 50 22 PM](https://github.com/user-attachments/assets/36ae54de-05fb-4cb7-a88f-a73ff92c73b4)
+
+3. Once the reservation has been created, click on the three dots under Actions, and click "Create assignment". 
+
+      <img width="212" alt="Screenshot 2024-08-01 at 6 26 21 PM" src="https://github.com/user-attachments/assets/2d71fe08-d3c0-4d35-ab4a-769120f535e4">
+
+4. Click Browse and find the project you are using for this demo. Then Select "CONTINUOUS" as the Job Type. Click Create.
+
+        ![Screenshot 2025-04-24 at 1 51 55 PM](https://github.com/user-attachments/assets/da7cdd87-00b3-45fe-b501-f6a45e3a1343)
+
+6. You'll now see your assignment created under your reservation:
+   
+      ![Screenshot 2025-04-24 at 1 54 23 PM](https://github.com/user-attachments/assets/dbf89e4d-82b9-4292-906f-3651c6de6278)
+
+
+7. Go back to the BigQuery SQL editor and paste the following SQL query:
+
+   **Note: The URI provided in the example below specifies a Pub/Sub Topic as the destination for the continuous query, with the GCP project listed as "my_project" and the Pub/Sub Topic listed as "my_topic". Be sure to change these to your own project/topic. You can also specify different destinations for a BigQuery continuous query, as described in [these examples](https://cloud.google.com/bigquery/docs/continuous-queries#examples).**
+
+   ```
+
+   ```
 
 ## Generate synthetic IoT sensor data 
 
