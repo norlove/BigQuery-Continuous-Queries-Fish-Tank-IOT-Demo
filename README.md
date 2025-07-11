@@ -120,14 +120,20 @@ The continuous query then writes this message to another Pub/Sub topic, which is
 
 ## Configure ServiceNow (if applicable)
 
-1. **TO DO: INCLUDE STEPS TO CONFIGURE SERVICENOW ENDPOINT HERE**
+1. To allocate a free ServiceNow environment, please follow the detailed instructions in the attached Insights to Action - ServiceNow Demo Instructions PDF file. From a high level, the steps include:
+   1a. Requesting a Personal Developer Instance (PDI) from ServiceNow
+   1b. Installing plugins
+   1c. Setting up foundational data with a user account
+   1d. Creating a REST API triggered flow
+   1e. Configuring an advanced work assignment
+   1f. Perform basic testing of your solution  
 
-2. Once your ServiceNow connection is configured and you have the endpoint configured, create a new Pub/Sub subcription named "cymbal_pets_to_servicenow" under the Pub/Sub topic cymbal_pets_ServiceNow_writer. This Pub/Sub subscription will push messages from the continuous query into the ServiceNow workflow. Be sure to set up the Pub/Sub scription as a Push method with the endpoint URL you created above (For Googler's please reference the instructions [HERE](https://docs.google.com/document/d/1Z6ZUwhSOPSsmPLsvEUZZCG9ZBux-U3kfKQRxTNsmBYE/edit?usp=sharing&resourcekey=0-t1GPrH6S_UGPqkw2DZu5iA)). Also be sure to check the "Enable payload unwrapping" and "Write metadata fields".
+3. Once your ServiceNow connection is configured and you have the endpoint configured, create a new Pub/Sub subcription named "cymbal_pets_to_servicenow" under the Pub/Sub topic cymbal_pets_ServiceNow_writer. This Pub/Sub subscription will push messages from the continuous query into the ServiceNow workflow. Be sure to set up the Pub/Sub scription as a Push method with the endpoint URL you created above (For Googler's please reference the instructions [HERE](https://docs.google.com/document/d/1Z6ZUwhSOPSsmPLsvEUZZCG9ZBux-U3kfKQRxTNsmBYE/edit?usp=sharing&resourcekey=0-t1GPrH6S_UGPqkw2DZu5iA)). Also be sure to check the "Enable payload unwrapping" and "Write metadata fields".
 
     ![B9JUuv7YZ2ATCVL](https://github.com/user-attachments/assets/a607e475-eb5a-45ef-a2b2-0817d401022e)
 
 
-3. Test the Pub/Sub to ServiceNow subscription by clicking on the cymbal_pets_ServiceNow_writer Pub/Sub topic, go to the Messages tab, and click publish message. Provide this input in the message body:
+4. Test the Pub/Sub to ServiceNow subscription by clicking on the cymbal_pets_ServiceNow_writer Pub/Sub topic, go to the Messages tab, and click publish message. Provide this input in the message body:
 
     ```
     {
@@ -136,11 +142,11 @@ The continuous query then writes this message to another Pub/Sub topic, which is
     }
     ```
 
-4. Log into ServiceNow's Service Operations Workspace, go to your inbox, make sure your status is set as "avaialble" and confirm a new incident arrived.
+5. Log into ServiceNow's Service Operations Workspace, go to your inbox, make sure your status is set as "avaialble" and confirm a new incident arrived.
 
     ![4sNxqG4YTYfDJhF](https://github.com/user-attachments/assets/8330c9fa-4c80-4b1d-9c42-b5159ccf75ff)
 
-5. Accept the incident and make sure the ticket description was correctly carried over.
+6. Accept the incident and make sure the ticket description was correctly carried over.
 
    ![BXsc7h5gDxzMjwi](https://github.com/user-attachments/assets/f5922f2f-0294-42f6-9a1f-752afcc42385)
 
