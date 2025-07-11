@@ -120,12 +120,18 @@ The continuous query then writes this message to another Pub/Sub topic, which is
 
 ## Configure ServiceNow (if applicable)
 
-1. To allocate a free ServiceNow environment, please follow the detailed instructions in the attached Insights to Action - ServiceNow Demo Instructions PDF file. From a high level, the steps include:
+1. To allocate a free ServiceNow environment, please follow the detailed instructions in the attached [Insights to Action - ServiceNow Demo Instructions PDF file](https://github.com/norlove/BigQuery-Continuous-Queries-Fish-Tank-IOT-Demo/blob/main/Insights%20to%20Action%20-%20ServiceNow%20Demo%20Instructions.pdf). From a high level, the steps include:
+
    1a. Requesting a Personal Developer Instance (PDI) from ServiceNow
+
    1b. Installing plugins
+
    1c. Setting up foundational data with a user account
+
    1d. Creating a REST API triggered flow
+
    1e. Configuring an advanced work assignment
+
    1f. Perform basic testing of your solution  
 
 3. Once your ServiceNow connection is configured and you have the endpoint configured, create a new Pub/Sub subcription named "cymbal_pets_to_servicenow" under the Pub/Sub topic cymbal_pets_ServiceNow_writer. This Pub/Sub subscription will push messages from the continuous query into the ServiceNow workflow. Be sure to set up the Pub/Sub scription as a Push method with the endpoint URL you created above (For Googler's please reference the instructions [HERE](https://docs.google.com/document/d/1Z6ZUwhSOPSsmPLsvEUZZCG9ZBux-U3kfKQRxTNsmBYE/edit?usp=sharing&resourcekey=0-t1GPrH6S_UGPqkw2DZu5iA)). Also be sure to check the "Enable payload unwrapping" and "Write metadata fields".
