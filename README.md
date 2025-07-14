@@ -130,7 +130,7 @@ The continuous query then writes this message to another Pub/Sub topic, which is
 
    1d. Creating a REST API triggered flow
 
-   1e. Configuring an advanced work assignment
+   1e. Configuring a Advanced Work Assignment
 
    1f. Perform basic testing of your solution  
 
