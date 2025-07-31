@@ -168,8 +168,8 @@ The continuous query then writes this message to another Pub/Sub topic, which is
       <img width="212" alt="Screenshot 2024-08-01 at 6 26 21 PM" src="https://github.com/user-attachments/assets/2d71fe08-d3c0-4d35-ab4a-769120f535e4">
 
 4. Click Browse and find the project you are using for this demo. Then Select "CONTINUOUS" as the Job Type. Click Create.
+<img width="608" height="527" alt="image" src="https://github.com/user-attachments/assets/7114744d-10a1-4240-9707-9758f713e795" />
 
-        ![Screenshot 2025-04-24 at 1 51 55 PM](https://github.com/user-attachments/assets/da7cdd87-00b3-45fe-b501-f6a45e3a1343)
 
 6. You'll now see your assignment created under your reservation:
    
